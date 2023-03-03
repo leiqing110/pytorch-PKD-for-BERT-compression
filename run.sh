@@ -1,16 +1,18 @@
 TASK_NAME='custom'
-TEACHER_MODEL='../model_hub/roberta_base_model/'
-STUDENT_MODEL='../model_hub/roberta_base_model/'
+TEACHER_MODEL='../model_hub/roberta_base_model_test//'
+STUDENT_MODEL='../model_hub/roberta_base_model_test//'
 GLUE_DIR=/zhangleisx4614/code/pytorch_bert_chinese_classification-main/data/
 
-python run_glue_distillation.py \
+python -m torch.distributed.launch run_glue_distillation.py \
     --model_type bert \
     --teacher_model $TEACHER_MODEL \
     --student_model $STUDENT_MODEL \
     --task_name $TASK_NAME \
     --num_hidden_layers 3 \
     --alpha 0.5 \
+    --evaluate_during_training \
     --beta 100.0 \
+    --local_rank 0 \
     --do_train \
     --do_eval \
     --do_lower_case \

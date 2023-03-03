@@ -22,10 +22,10 @@ import logging
 import os
 import sys
 from io import open
-
+import traceback
 from scipy.stats import pearsonr, spearmanr
 from sklearn.metrics import matthews_corrcoef, f1_score
-
+import pdb
 logger = logging.getLogger(__name__)
 
 
@@ -521,14 +521,18 @@ def convert_examples_to_features(examples, label_list, max_seq_length,
         assert len(input_ids) == max_seq_length
         assert len(input_mask) == max_seq_length
         assert len(segment_ids) == max_seq_length
-
-        if output_mode == "classification":
-            label_id = label_map[example.label]
-        elif output_mode == "regression":
-            label_id = float(example.label)
-        else:
-            raise KeyError(output_mode)
-
+        try:
+            if output_mode == "classification":
+                label_id = label_map[example.label]
+        
+            elif output_mode == "regression":
+                label_id = float(example.label)
+            else:
+                raise KeyError(output_mode)
+        except Exception as e:
+            logging.warning("example.label:{}".format(example.label))
+            logging.error(traceback.format_exc())
+            continue
         if ex_index < 5:
             logger.info("*** Example ***")
             logger.info("guid: %s" % (example.guid))
@@ -610,6 +614,8 @@ def compute_metrics(task_name, preds, labels):
         return {"acc": simple_accuracy(preds, labels)}
     elif task_name == "wnli":
         return {"acc": simple_accuracy(preds, labels)}
+    elif task_name == "custom":
+        return acc_and_f1(preds, labels)
     else:
         raise KeyError(task_name)
 

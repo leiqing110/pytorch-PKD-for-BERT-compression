@@ -44,7 +44,7 @@ from pytorch_transformers import AdamW, WarmupLinearSchedule
 from utils_glue import (compute_metrics, convert_examples_to_features,
                         output_modes, processors)
 from distillation import PatientDistillation
-
+import pdb
 MODEL_CLASSES = {
     'bert': (BertConfig, BertForSequenceClassification, BertTokenizer),
     'xlnet': (XLNetConfig, XLNetForSequenceClassification, XLNetTokenizer),
@@ -180,12 +180,14 @@ def train(args, train_dataset, t_model, s_model, order, d_criterion, tokenizer):
                         results = evaluate(args, s_model, tokenizer)
                         for key, value in results.items():
                             tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
+                            logging.info('eval_{}'.format(key),value, global_step)
                     tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
-                    tb_writer.add_scalar('total loss', average_loss / args.logging_steps, global_step)
-                    tb_writer.add_scalar('train loss', train_avg_loss / args.logging_steps, global_step)
-                    tb_writer.add_scalar('soft loss', soft_avg_loss / args.logging_steps, global_step)
-                    tb_writer.add_scalar('distill loss', distill_avg_loss / args.logging_steps, global_step)
-
+                    tb_writer.add_scalar('total_loss', average_loss / args.logging_steps, global_step)
+                    tb_writer.add_scalar('train_loss', train_avg_loss / args.logging_steps, global_step)
+                    tb_writer.add_scalar('soft_loss', soft_avg_loss / args.logging_steps, global_step)
+                    tb_writer.add_scalar('distill_loss', distill_avg_loss / args.logging_steps, global_step)
+                    logging.info('lr', scheduler.get_lr()[0], global_step)
+                    logging.info('total_loss:{}\ttrain_loss:{}\tsoft_loss:{}\tdistill_loss:{}\tglobal_step:{}'.format(average_loss / args.logging_steps,train_avg_loss / args.logging_steps,soft_avg_loss / args.logging_steps, distill_avg_loss / args.logging_steps, global_step))
                     average_loss = 0.0
                     train_avg_loss = 0.0
                     soft_avg_loss = 0.0
@@ -298,7 +300,6 @@ def load_and_cache_examples(args, task, tokenizer, evaluate=False):
 
     dataset = TensorDataset(all_input_ids, all_input_mask, all_segment_ids, all_label_ids)
     return dataset
-
 
 def main():
     parser = argparse.ArgumentParser()
